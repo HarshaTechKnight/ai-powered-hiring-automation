@@ -1,4 +1,4 @@
-# AI-Powered Candidate Screener
+# KarmaHire - AI-Powered Candidate Screener
 
 This project is an AI-powered application designed to streamline the candidate screening process. It leverages various AI models to perform tasks such as resume analysis, interview question generation, skill gap analysis, and interview transcription and analysis.
 
@@ -46,3 +46,9 @@ bash
    
 ```
 The application should now be running on `http://localhost:3000`.
+
+## Screenshots
+
+![Screenshot-3](https://github.com/user-attachments/assets/02cd2c51-564d-4a75-9406-27bbe5aeb3c3)
+![Screenshot-2](https://github.com/user-attachments/assets/d740ccc4-7bcd-488b-939d-3ffde77179ec)
+![Screenshot-1](https://github.com/user-attachments/assets/545a2e6c-c78b-4cda-85d2-fa6831dc2ac4)
