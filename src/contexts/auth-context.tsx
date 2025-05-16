@@ -4,18 +4,24 @@
 import type { User } from "@/types";
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { 
+  onAuthStateChanged, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signOut as firebaseSignOut, 
+  updateProfile 
+} from "firebase/auth";
+import { auth } from "@/lib/firebase"; // Import Firebase auth instance
 
 interface AuthContextType {
   currentUser: User | null;
   isLoading: boolean;
-  login: (email: string, pass: string) => Promise<void>; // Keep async for future API calls
+  login: (email: string, pass: string) => Promise<void>;
   register: (name: string, email: string, pass: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-const AUTH_STORAGE_KEY = "karmahire_user";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -23,56 +29,74 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
 
   useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem(AUTH_STORAGE_KEY);
-      if (storedUser) {
-        setCurrentUser(JSON.parse(storedUser));
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        const user: User = {
+          id: firebaseUser.uid,
+          email: firebaseUser.email || "", // Firebase email can be null
+          name: firebaseUser.displayName || undefined,
+        };
+        setCurrentUser(user);
+      } else {
+        setCurrentUser(null);
       }
-    } catch (error) {
-      console.error("Failed to load user from localStorage", error);
-      localStorage.removeItem(AUTH_STORAGE_KEY);
-    }
-    setIsLoading(false);
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe(); // Cleanup subscription on unmount
   }, []);
 
   const login = async (email: string, pass: string) => {
-    // MOCK IMPLEMENTATION - NOT SECURE FOR PRODUCTION
-    // In a real app, call your backend API here
     setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // For demo, allow any login if email is valid. In real app, verify credentials.
-    if (email && pass) { // Basic check
-      const user: User = { id: crypto.randomUUID(), email, name: email.split('@')[0] }; // Mock user
-      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
-      setCurrentUser(user);
-      router.push("/dashboard");
-    } else {
-        throw new Error("Invalid email or password");
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
+      // onAuthStateChanged will handle setting currentUser and redirecting
+      // No need to manually push to router here if (app)/layout.tsx handles it
+    } catch (error: any) {
+      // Firebase errors have a 'code' and 'message' property
+      console.error("Firebase login error:", error);
+      throw new Error(error.message || "Login failed. Please check your credentials.");
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const register = async (name: string, email: string, pass: string) => {
-    // MOCK IMPLEMENTATION - NOT SECURE FOR PRODUCTION
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    if (name && email && pass) { // Basic check
-        const user: User = { id: crypto.randomUUID(), email, name };
-        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
-        setCurrentUser(user);
-        router.push("/dashboard");
-    } else {
-        throw new Error("All fields are required for registration");
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+      await updateProfile(userCredential.user, { displayName: name });
+      // onAuthStateChanged will handle setting currentUser
+      // Refresh user data to get displayName immediately if needed, or rely on onAuthStateChanged
+      const updatedFirebaseUser = auth.currentUser;
+       if (updatedFirebaseUser) {
+         setCurrentUser({
+           id: updatedFirebaseUser.uid,
+           email: updatedFirebaseUser.email || "",
+           name: updatedFirebaseUser.displayName || undefined,
+         });
+       }
+      // No need to manually push to router here if (app)/layout.tsx handles it
+    } catch (error: any) {
+      console.error("Firebase registration error:", error);
+      throw new Error(error.message || "Registration failed. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
-  const logout = () => {
-    localStorage.removeItem(AUTH_STORAGE_KEY);
-    setCurrentUser(null);
-    router.push("/login");
+  const logout = async () => {
+    setIsLoading(true);
+    try {
+      await firebaseSignOut(auth);
+      setCurrentUser(null); // Explicitly clear user
+      router.push("/login"); // Navigate to login after sign out
+    } catch (error: any) {
+      console.error("Firebase logout error:", error);
+      throw new Error(error.message || "Logout failed.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

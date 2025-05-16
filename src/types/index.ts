@@ -39,8 +39,8 @@ export interface Candidate {
 }
 
 export interface User {
-  id: string;
-  name?: string;
-  email: string;
-  // Add other profile fields as needed
+  id: string; // Corresponds to Firebase uid
+  name?: string; // Corresponds to Firebase displayName
+  email: string; // Corresponds to Firebase email
+  // Add other profile fields as needed, e.g., photoURL
 }
