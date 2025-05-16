@@ -1,5 +1,5 @@
 
-import { Briefcase, LayoutDashboard, FileText, Mic2 } from "lucide-react";
+import { Briefcase, LayoutDashboard, FileText, Mic2, FileSignature } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export interface NavItem {
@@ -25,6 +25,11 @@ export const navItems: NavItem[] = [
     title: "Interview Analysis",
     href: "/interview-analysis",
     icon: Mic2,
+  },
+  {
+    title: "Job Description Generator",
+    href: "/job-description-generator",
+    icon: FileSignature,
   },
 ];
 
