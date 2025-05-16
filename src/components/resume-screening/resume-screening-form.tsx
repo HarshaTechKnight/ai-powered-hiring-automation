@@ -16,7 +16,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { performResumeScreening } from "@/app/actions";
 import type { SummarizeResumeOutput } from "@/ai/flows/summarize-resume";
@@ -24,7 +23,7 @@ import { toBase64DataURI } from "@/lib/file-utils";
 import { useToast } from "@/hooks/use-toast";
 import type { Candidate } from "@/types";
 import { useCandidates } from "@/contexts/candidate-context";
-import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2, FileSearch } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -39,7 +38,6 @@ const formSchema = z.object({
       (files) => ACCEPTED_FILE_TYPES.includes(files?.[0]?.type),
       ".pdf, .docx, .txt files are accepted."
     ),
-  weightingCriteria: z.string().min(10, "Weighting criteria must be at least 10 characters."),
 });
 
 type ResumeScreeningFormValues = z.infer<typeof formSchema>;
@@ -60,7 +58,6 @@ export function ResumeScreeningClientForm({ candidate, onScreeningComplete }: Re
     resolver: zodResolver(formSchema),
     defaultValues: {
       resumeFile: undefined,
-      weightingCriteria: candidate?.weightingCriteria || "",
     },
   });
 
@@ -75,21 +72,20 @@ export function ResumeScreeningClientForm({ candidate, onScreeningComplete }: Re
 
       const screeningResults = await performResumeScreening({
         resumeDataUri,
-        weightingCriteria: values.weightingCriteria,
       });
       
       setResults(screeningResults);
       toast({
         title: "Resume Screened Successfully",
-        description: "AI analysis complete.",
+        description: "AI analysis complete. Weighting criteria were auto-generated.",
       });
 
       if (candidate) {
         updateCandidate(candidate.id, {
           status: 'Resume Screened',
-          resumeDataUri, // Save for reference if needed, though file object is more useful for re-upload
+          resumeDataUri,
           resumeFileName: file.name,
-          weightingCriteria: values.weightingCriteria,
+          weightingCriteria: screeningResults.generatedWeightingCriteria, // Store AI-generated criteria
           resumeSummary: screeningResults.summary,
           resumeScore: screeningResults.weightedScore,
         });
@@ -127,27 +123,7 @@ export function ResumeScreeningClientForm({ candidate, onScreeningComplete }: Re
                   />
                 </FormControl>
                 <FormDescription>
-                  Upload the candidate's resume (PDF, DOCX, TXT, max 5MB).
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="weightingCriteria"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Weighting Criteria</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="e.g., Prioritize candidates with 5+ years of experience in Next.js, strong communication skills, and a background in SaaS..."
-                    className="min-h-[100px]"
-                    {...field}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Describe the key skills, experience, and qualifications you're looking for.
+                  Upload the candidate's resume (PDF, DOCX, TXT, max 5MB). The AI will generate weighting criteria based on its content.
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -183,10 +159,17 @@ export function ResumeScreeningClientForm({ candidate, onScreeningComplete }: Re
             </CardTitle>
             {candidate && <CardDescription>Results for {candidate.name}</CardDescription>}
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
             <div>
               <h3 className="font-semibold text-lg mb-1">Weighted Score:</h3>
-              <p className="text-2xl font-bold text-primary">{results.weightedScore.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-primary">{results.weightedScore.toFixed(2)} / 100</p>
+            </div>
+             <div>
+              <h3 className="font-semibold text-lg mb-2 flex items-center gap-2">
+                <FileSearch className="h-5 w-5 text-primary"/>
+                AI-Generated Weighting Criteria:
+              </h3>
+              <p className="text-muted-foreground whitespace-pre-wrap bg-muted p-3 rounded-md text-sm">{results.generatedWeightingCriteria}</p>
             </div>
             <div>
               <h3 className="font-semibold text-lg mb-1">Summary:</h3>

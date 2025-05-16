@@ -14,7 +14,7 @@ export default function ResumeScreeningPage() {
         <CardHeader>
           <CardTitle>Screen New Resume</CardTitle>
           <CardDescription>
-            Upload a resume and provide weighting criteria to get an AI-powered analysis and score.
+            Upload a resume. The AI will analyze it, automatically generate relevant weighting criteria, and provide a summary and score.
           </CardDescription>
         </CardHeader>
         <CardContent>

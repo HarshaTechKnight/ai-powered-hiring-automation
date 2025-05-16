@@ -62,7 +62,8 @@ export default function CandidateResumeScreeningPage() {
         <CardHeader>
           <CardTitle>Screen {candidate.name}'s Resume</CardTitle>
           <CardDescription>
-            Upload {candidate.name}'s resume and provide weighting criteria. Previous criteria are pre-filled if available.
+            Upload {candidate.name}'s resume. The AI will automatically generate weighting criteria based on the resume content, then summarize and score it.
+            {candidate?.resumeFileName && <span className="block mt-1 text-xs text-muted-foreground">Previously uploaded: {candidate.resumeFileName}</span>}
           </CardDescription>
         </CardHeader>
         <CardContent>
