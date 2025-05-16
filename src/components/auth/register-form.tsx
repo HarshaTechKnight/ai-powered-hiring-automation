@@ -47,13 +47,13 @@ export function RegisterForm() {
     try {
       await register(values.name, values.email, values.password);
       toast({
-        title: "Registration Successful",
+        title: "Registration Successful (Mock)",
         description: "Welcome to KarmaHire!",
       });
       // Redirect is handled by AuthContext or AuthLayout
     } catch (error: any) {
       toast({
-        title: "Registration Failed",
+        title: "Registration Failed (Mock)",
         description: error.message || "An error occurred. Please try again.",
         variant: "destructive",
       });

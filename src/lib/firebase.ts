@@ -1,7 +1,7 @@
 
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
-import { getAuth } from "firebase/auth";
+// import { getAuth } from "firebase/auth"; // Firebase Auth is being removed
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -15,6 +15,9 @@ const firebaseMessagingSenderId = process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SEN
 const firebaseAppId = process.env.NEXT_PUBLIC_FIREBASE_APP_ID;
 const firebaseMeasurementId = process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID; // Optional
 
+let appInitialized = false;
+let app;
+
 // Check if critical environment variables are loaded
 if (!firebaseApiKey || !firebaseAuthDomain || !firebaseProjectId) {
   let errorMessage = "CRITICAL FIREBASE CONFIGURATION ERROR:\n";
@@ -26,13 +29,9 @@ if (!firebaseApiKey || !firebaseAuthDomain || !firebaseProjectId) {
   if (!firebaseProjectId) errorMessage += "  - NEXT_PUBLIC_FIREBASE_PROJECT_ID\n";
   errorMessage += "\nAfter creating or updating .env.local, YOU MUST RESTART YOUR NEXT.JS DEVELOPMENT SERVER.\n";
   
-  // Log this error to the console. It will appear in the browser console and/or server logs.
   console.error(errorMessage);
-
-  // Optionally, you could throw an error here to halt execution,
-  // but allowing Firebase to attempt initialization and throw its specific error
-  // (like auth/invalid-api-key) is also informative.
-  // For now, this detailed console log should be a strong hint.
+  // Not throwing an error here to allow the app to run in a degraded mode if only some Firebase services are affected.
+  // Auth is being removed, so this check is less critical for auth itself but good for other potential Firebase services.
 }
 
 const firebaseConfig: FirebaseOptions = {
@@ -42,31 +41,37 @@ const firebaseConfig: FirebaseOptions = {
   storageBucket: firebaseStorageBucket,
   messagingSenderId: firebaseMessagingSenderId,
   appId: firebaseAppId,
-  measurementId: firebaseMeasurementId, // This is optional, Firebase SDK handles if it's undefined
+  measurementId: firebaseMeasurementId, 
 };
 
-// Initialize Firebase
-let app;
-if (!getApps().length) {
-  try {
-    // Check if API key specifically looks like a placeholder, which is a common mistake.
-    if (firebaseApiKey && (firebaseApiKey.includes("your_") || firebaseApiKey.startsWith("your"))) {
-        console.warn(
-            "Firebase Configuration Hint: Your NEXT_PUBLIC_FIREBASE_API_KEY (" + firebaseApiKey + ") " +
-            "looks like a placeholder value (e.g., 'your_api_key_here'). " +
-            "Please ensure you've replaced it with your actual Firebase API key from your Firebase project settings " +
-            "in the .env.local file and restarted your development server."
-        );
+// Initialize Firebase App (if config seems valid and not already initialized)
+// This part is kept in case other Firebase services (like Firestore, Storage) are used later.
+// If only Auth was used, this initialization could also be conditionally removed or fully removed.
+if (firebaseApiKey && firebaseAuthDomain && firebaseProjectId) {
+  if (!getApps().length) {
+    try {
+      if (firebaseApiKey && (firebaseApiKey.includes("your_") || firebaseApiKey.startsWith("your"))) {
+          console.warn(
+              "Firebase Configuration Hint: Your NEXT_PUBLIC_FIREBASE_API_KEY (" + firebaseApiKey + ") " +
+              "looks like a placeholder value (e.g., 'your_api_key_here'). " +
+              "Please ensure you've replaced it with your actual Firebase API key from your Firebase project settings " +
+              "in the .env.local file and restarted your development server."
+          );
+      }
+      app = initializeApp(firebaseConfig);
+      appInitialized = true;
+    } catch (error) {
+      console.error("Firebase app initialization failed:", error);
+      // Not throwing an error here, to allow app to potentially proceed if auth is mocked out.
     }
-    app = initializeApp(firebaseConfig);
-  } catch (error) {
-    console.error("Firebase initialization failed:", error);
-    // Re-throw the error to allow Next.js to handle it and display an error page.
-    throw error;
+  } else {
+    app = getApp();
+    appInitialized = true;
   }
 } else {
-  app = getApp();
+  console.warn("Firebase app initialization skipped due to missing critical config variables. Firebase features might not work.");
 }
 
-export const auth = getAuth(app);
+// export const auth = getAuth(app); // Firebase Auth instance removed
+export { app, appInitialized }; // Export app instance and initialized status
 export default app;

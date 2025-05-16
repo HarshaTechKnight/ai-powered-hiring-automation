@@ -4,14 +4,15 @@
 import type { User } from "@/types";
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { 
-  onAuthStateChanged, 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
-  signOut as firebaseSignOut, 
-  updateProfile 
-} from "firebase/auth";
-import { auth } from "@/lib/firebase"; // Import Firebase auth instance
+// Firebase imports removed:
+// import { 
+//   onAuthStateChanged, 
+//   signInWithEmailAndPassword, 
+//   createUserWithEmailAndPassword, 
+//   signOut as firebaseSignOut, 
+//   updateProfile 
+// } from "firebase/auth";
+// import { auth } from "@/lib/firebase"; 
 
 interface AuthContextType {
   currentUser: User | null;
@@ -23,80 +24,81 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const MOCK_USER_STORAGE_KEY = "karmahire_mock_user";
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); // Start true to simulate loading
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
-        const user: User = {
-          id: firebaseUser.uid,
-          email: firebaseUser.email || "", // Firebase email can be null
-          name: firebaseUser.displayName || undefined,
-        };
-        setCurrentUser(user);
-      } else {
-        setCurrentUser(null);
+    // Simulate checking for a logged-in user from localStorage
+    try {
+      const storedUser = localStorage.getItem(MOCK_USER_STORAGE_KEY);
+      if (storedUser) {
+        setCurrentUser(JSON.parse(storedUser));
       }
-      setIsLoading(false);
-    });
-
-    return () => unsubscribe(); // Cleanup subscription on unmount
+    } catch (error) {
+      console.error("Error reading mock user from localStorage", error);
+      localStorage.removeItem(MOCK_USER_STORAGE_KEY);
+    }
+    setIsLoading(false); // Finished "loading"
   }, []);
 
   const login = async (email: string, pass: string) => {
     setIsLoading(true);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 500)); 
+    
+    // In a real mock, you might check credentials against a hardcoded list
+    // For this, we'll just create a user
+    const mockUser: User = {
+      id: crypto.randomUUID(),
+      email: email,
+      name: "Mock User " + email.split('@')[0], // Simple name generation
+    };
+    setCurrentUser(mockUser);
     try {
-      await signInWithEmailAndPassword(auth, email, pass);
-      // onAuthStateChanged will handle setting currentUser and redirecting
-      // No need to manually push to router here if (app)/layout.tsx handles it
-    } catch (error: any) {
-      // Firebase errors have a 'code' and 'message' property
-      console.error("Firebase login error:", error);
-      throw new Error(error.message || "Login failed. Please check your credentials.");
-    } finally {
-      setIsLoading(false);
+      localStorage.setItem(MOCK_USER_STORAGE_KEY, JSON.stringify(mockUser));
+    } catch (error) {
+      console.error("Error saving mock user to localStorage", error);
     }
+    setIsLoading(false);
+    // router.push('/dashboard'); // Handled by (app) layout
   };
 
   const register = async (name: string, email: string, pass: string) => {
     setIsLoading(true);
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-      await updateProfile(userCredential.user, { displayName: name });
-      // onAuthStateChanged will handle setting currentUser
-      // Refresh user data to get displayName immediately if needed, or rely on onAuthStateChanged
-      const updatedFirebaseUser = auth.currentUser;
-       if (updatedFirebaseUser) {
-         setCurrentUser({
-           id: updatedFirebaseUser.uid,
-           email: updatedFirebaseUser.email || "",
-           name: updatedFirebaseUser.displayName || undefined,
-         });
-       }
-      // No need to manually push to router here if (app)/layout.tsx handles it
-    } catch (error: any) {
-      console.error("Firebase registration error:", error);
-      throw new Error(error.message || "Registration failed. Please try again.");
-    } finally {
-      setIsLoading(false);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const mockUser: User = {
+      id: crypto.randomUUID(),
+      email: email,
+      name: name,
+    };
+    setCurrentUser(mockUser);
+     try {
+      localStorage.setItem(MOCK_USER_STORAGE_KEY, JSON.stringify(mockUser));
+    } catch (error) {
+      console.error("Error saving mock user to localStorage", error);
     }
+    setIsLoading(false);
+    // router.push('/dashboard'); // Handled by (app) layout
   };
 
   const logout = async () => {
     setIsLoading(true);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 500));
+    setCurrentUser(null);
     try {
-      await firebaseSignOut(auth);
-      setCurrentUser(null); // Explicitly clear user
-      router.push("/login"); // Navigate to login after sign out
-    } catch (error: any) {
-      console.error("Firebase logout error:", error);
-      throw new Error(error.message || "Logout failed.");
-    } finally {
-      setIsLoading(false);
+      localStorage.removeItem(MOCK_USER_STORAGE_KEY);
+    } catch (error) {
+      console.error("Error removing mock user from localStorage", error);
     }
+    router.push("/login"); // Explicitly redirect to login on logout
+    setIsLoading(false);
   };
 
   return (

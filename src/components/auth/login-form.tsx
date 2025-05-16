@@ -46,12 +46,12 @@ export function LoginForm() {
       await login(values.email, values.password);
       toast({
         title: "Login Successful",
-        description: "Welcome back!",
+        description: "Welcome back! (Mock Login)",
       });
       // Redirect is handled by AuthContext or AuthLayout
     } catch (error: any) {
       toast({
-        title: "Login Failed",
+        title: "Login Failed (Mock)",
         description: error.message || "Please check your credentials and try again.",
         variant: "destructive",
       });
