@@ -143,7 +143,7 @@ export function GenerateJobDescriptionForm() {
                 <FormLabel>Key Responsibilities (Optional)</FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder="List key tasks and duties, e.g.,&#10;- Develop new features&#10;- Collaborate with teams..."
+                    placeholder="List key tasks and duties, e.g.,\n- Develop new features\n- Collaborate with teams..."
                     className="min-h-[120px]"
                     {...field}
                   />
@@ -160,7 +160,7 @@ export function GenerateJobDescriptionForm() {
                 <FormLabel>Required Skills & Qualifications (Optional)</FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder="List essential skills, experience, and education, e.g.,&#10;- 5+ years in JavaScript&#10;- BSc in Computer Science..."
+                    placeholder="List essential skills, experience, and education, e.g.,\n- 5+ years in JavaScript\n- BSc in Computer Science..."
                     className="min-h-[120px]"
                     {...field}
                   />
@@ -177,7 +177,7 @@ export function GenerateJobDescriptionForm() {
                 <FormLabel>Benefits & Perks (Optional)</FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder="List attractive benefits, e.g.,&#10;- Health insurance&#10;- Remote work options..."
+                    placeholder="List attractive benefits, e.g.,\n- Health insurance\n- Remote work options..."
                     className="min-h-[100px]"
                     {...field}
                   />
@@ -235,3 +235,4 @@ export function GenerateJobDescriptionForm() {
     </div>
   );
 }
+

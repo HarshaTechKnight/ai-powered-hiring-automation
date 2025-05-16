@@ -50,3 +50,4 @@ export const navItems: NavItem[] = [
 
 export const APP_NAME = "KarmaHire";
 export const APP_ICON = Briefcase;
+

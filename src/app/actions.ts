@@ -56,3 +56,4 @@ export async function performSkillGapAnalysis(input: AnalyzeSkillGapInput): Prom
     throw new Error("AI Skill Gap Analysis failed. Please check logs.");
   }
 }
+
