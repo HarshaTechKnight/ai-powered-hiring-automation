@@ -1,5 +1,5 @@
 
-import { Briefcase, LayoutDashboard, FileText, Mic2, FileSignature, HelpCircle, BarChartHorizontalBig } from "lucide-react";
+import { Briefcase, LayoutDashboard, FileText, Mic2, FileSignature, HelpCircle, BarChartHorizontalBig, CalendarClock } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export interface NavItem {
@@ -20,6 +20,11 @@ export const navItems: NavItem[] = [
     title: "Resume Screening",
     href: "/resume-screening",
     icon: FileText,
+  },
+  {
+    title: "Interview Scheduling",
+    href: "/interview-scheduling",
+    icon: CalendarClock,
   },
   {
     title: "Interview Analysis",

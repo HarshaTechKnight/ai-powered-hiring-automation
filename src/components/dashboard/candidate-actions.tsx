@@ -1,7 +1,7 @@
 
 "use client";
 
-import { MoreHorizontal, FileText, Mic2, CheckCircle, XCircle, Clock, UserPlus, ArrowRightCircle, Briefcase } from "lucide-react";
+import { MoreHorizontal, FileText, Mic2, CheckCircle, XCircle, Clock, UserPlus, ArrowRightCircle, Briefcase, CalendarClock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -43,6 +43,15 @@ export function CandidateActions({ candidate }: CandidateActionsProps) {
     });
   };
 
+  const canScheduleInterview = candidate.status === 'Resume Screened' || candidate.status === 'Interview Scheduling' || candidate.status === 'Interview Scheduled';
+  const canAnalyzeInterview = 
+    candidate.status === 'Interview Scheduled' || 
+    candidate.status === 'Interview Analysis Pending' ||
+    candidate.status === 'Interview Analyzed' || // Allow re-analysis
+    candidate.status === 'Offer Extended' || 
+    candidate.status === 'Hired';
+
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -52,14 +61,22 @@ export function CandidateActions({ candidate }: CandidateActionsProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+        <DropdownMenuLabel>Actions for {candidate.name}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => router.push(`/resume-screening/${candidate.id}`)}>
           <FileText className="mr-2 h-4 w-4" />
           <span>Screen Resume</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push(`/interview-analysis/${candidate.id}`)}
-          disabled={!candidate.resumeScreened && candidate.status !== 'Resume Screened' && candidate.status !== 'Interview Scheduling' && candidate.status !== 'Interview Scheduled' && candidate.status !== 'Interview Analysis Pending' && candidate.status !== 'Interview Analyzed' && candidate.status !== 'Offer Extended' && candidate.status !== 'Hired'}
+        <DropdownMenuItem 
+          onClick={() => router.push(`/interview-scheduling/${candidate.id}`)}
+          disabled={!canScheduleInterview}
+        >
+          <CalendarClock className="mr-2 h-4 w-4" />
+          <span>Schedule Interview</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem 
+          onClick={() => router.push(`/interview-analysis/${candidate.id}`)}
+          disabled={!canAnalyzeInterview}
         >
           <Mic2 className="mr-2 h-4 w-4" />
           <span>Analyze Interview</span>
