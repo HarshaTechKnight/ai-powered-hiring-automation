@@ -1,5 +1,5 @@
 
-import { Briefcase, LayoutDashboard, FileText, Mic2, FileSignature } from "lucide-react";
+import { Briefcase, LayoutDashboard, FileText, Mic2, FileSignature, HelpCircle, BarChartHorizontalBig } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export interface NavItem {
@@ -30,6 +30,16 @@ export const navItems: NavItem[] = [
     title: "Job Description Generator",
     href: "/job-description-generator",
     icon: FileSignature,
+  },
+  {
+    title: "Interview Questions",
+    href: "/interview-question-generator",
+    icon: HelpCircle,
+  },
+  {
+    title: "Skill Gap Analyzer",
+    href: "/skill-gap-analyzer",
+    icon: BarChartHorizontalBig,
   },
 ];
 
