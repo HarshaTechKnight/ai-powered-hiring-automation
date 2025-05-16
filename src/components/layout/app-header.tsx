@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { UserCircle2, LogOut, LogIn, UserPlus } from "lucide-react";
+import { UserCircle2, LogOut, LogIn, UserPlus, Loader2 } from "lucide-react";
 
 export function AppHeader() {
   const { currentUser, logout, isLoading } = useAuth();
@@ -39,13 +39,17 @@ export function AppHeader() {
       </div>
       <div className="ml-auto flex items-center gap-4">
         {isLoading ? (
-          <div className="h-8 w-20 animate-pulse rounded-md bg-muted"></div>
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
         ) : currentUser ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                 <Avatar className="h-9 w-9">
-                  <AvatarImage src={`https://placehold.co/40x40.png?text=${getInitials(currentUser.name)}`} alt={currentUser.name || "User"} data-ai-hint="user avatar" />
+                  <AvatarImage 
+                    src={currentUser.avatarDataUri || `https://placehold.co/40x40.png?text=${getInitials(currentUser.name)}`} 
+                    alt={currentUser.name || "User"} 
+                    data-ai-hint="user avatar"
+                  />
                   <AvatarFallback>{getInitials(currentUser.name)}</AvatarFallback>
                 </Avatar>
               </Button>
