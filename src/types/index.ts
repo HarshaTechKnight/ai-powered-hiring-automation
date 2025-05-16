@@ -5,7 +5,7 @@ export type CandidateStatus =
   | 'Applied'
   | 'Resume Screening Pending'
   | 'Resume Screened'
-  | 'Interview Scheduling' // New status for when scheduling is in progress or an option
+  | 'Interview Scheduling'
   | 'Interview Scheduled'
   | 'Interview Analysis Pending'
   | 'Interview Analyzed'
@@ -32,11 +32,15 @@ export interface Candidate {
   evaluationMetrics?: string;
   interviewAnalysis?: AnalyzeInterviewOutput;
   createdAt: string;
-
-  // New fields for interview scheduling
-  interviewDate?: string; // ISO string for combined date and time
+  interviewDate?: string;
   interviewer?: string;
   interviewType?: 'Phone Screen' | 'Video Call' | 'In-Person';
-  interviewLocationLink?: string; // Physical address or meeting URL
+  interviewLocationLink?: string;
 }
 
+export interface User {
+  id: string;
+  name?: string;
+  email: string;
+  // Add other profile fields as needed
+}

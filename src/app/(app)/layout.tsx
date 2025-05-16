@@ -1,21 +1,46 @@
 
+"use client"; // Required for hooks like useAuth and useRouter
+
+import React, { useEffect } from 'react';
+import { useAuth } from '@/contexts/auth-context';
+import { useRouter, usePathname } from 'next/navigation';
 import {
   SidebarProvider,
   Sidebar,
   SidebarHeader,
   SidebarContent,
   SidebarFooter,
-  SidebarTrigger,
   SidebarInset,
 } from "@/components/ui/sidebar";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { AppHeader } from "@/components/layout/app-header";
 import { APP_NAME, APP_ICON } from "@/config/nav";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { Toaster } from "@/components/ui/toaster";
+import Link from "next/link";
+import { Loader2 } from "lucide-react";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
+  const { currentUser, isLoading } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (!isLoading && !currentUser) {
+      // Store the current path to redirect back after login, if desired
+      // For simplicity, just redirect to login for now
+      router.push('/login');
+    }
+  }, [currentUser, isLoading, router, pathname]);
+
+  if (isLoading || (!currentUser && pathname !== '/login' && pathname !== '/register')) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
+  }
+  
+  // If user is present, render the app layout
   return (
     <SidebarProvider defaultOpen>
       <Sidebar>
